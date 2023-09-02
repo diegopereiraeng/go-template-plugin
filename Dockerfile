@@ -4,13 +4,14 @@ FROM golang:1.21-alpine as plugin-build
 # Install git for fetching dependencies
 RUN apk add --no-cache --update git
 
-# Set working directory for the plugin
-WORKDIR /plugin
+# Set working directory inside the container
+WORKDIR /app
 
 # Copy plugin go files and go.mod to working directory
-COPY main.go plugin.go ./
-
+# Copy go files and go.mod to working directory
+COPY *.go ./
 COPY go.mod go.sum ./
+
 
 # Fetch dependencies and build the plugin
 RUN go mod download
@@ -34,7 +35,7 @@ COPY test /app/test
 RUN mkdir /app/test/results
 
 # Copy the plugin binary from the build stage
-COPY --from=plugin-build /plugin/go-template-plugin /app/go-template-plugin
+COPY --from=plugin-build /app/go-template-plugin /app/go-template-plugin
 RUN chmod +x /app/go-template-plugin
 
 # Set the working directory

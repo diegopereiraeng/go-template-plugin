@@ -26,6 +26,12 @@ RUN apk --no-cache add curl jq bash zip yq
 COPY go-template.zip /app/go-template.zip
 RUN unzip /app/go-template.zip -d /app && chmod +x /app/go-template
 
+# Copy the template test files
+COPY test /app/test
+
+# Create a directory for test results
+RUN mkdir /app/test/results
+
 # Copy the plugin binary from the build stage
 COPY --from=plugin-build /plugin/go-template-plugin /app/go-template-plugin
 RUN chmod +x /app/go-template-plugin

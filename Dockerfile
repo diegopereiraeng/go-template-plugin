@@ -1,6 +1,6 @@
 
 # Build stage for the new plugin
-FROM golang:1.21-alpine as plugin-build
+FROM golang:1.23-alpine as plugin-build
 
 # Install git for fetching dependencies
 RUN apk add --no-cache --update git

@@ -1,0 +1,124 @@
+{{- if .Values.env.config}}
+# harness.io/skip-versioning: "true"
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Values.name}}
+  annotations:
+    harness.io/skip-versioning: true
+data:
+{{.Values.env.config | toYaml | indent 2}}
+---
+{{- end}}
+
+{{- if .Values.env.secrets}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{.Values.name}}
+  annotations:
+    harness.io/skip-versioning: true
+stringData:
+{{.Values.env.secrets | toYaml | indent 2}}
+---
+{{- end}}
+
+{{- if .Values.dynamicSecrets}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{.Values.name}}-dynamic
+  annotations:
+    harness.io/skip-versioning: true
+stringData:
+{{.Values.dynamicSecrets | indent 2}}
+---
+{{- end}}
+
+{{- if .Values.dockercfg}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{.Values.name}}-dockercfg
+  annotations:
+    harness.io/skip-versioning: true
+data:
+  .dockercfg: {{.Values.dockercfg}}
+type: kubernetes.io/dockercfg
+---
+{{- end}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{.Values.name}}
+spec:
+  replicas: {{int .Values.replicas}}
+  selector:
+    matchLabels:
+      app: {{.Values.name}}
+  template:
+    metadata:
+      labels:
+        app: {{.Values.name}}
+    spec:
+      {{- if .Values.dockercfg}}
+      imagePullSecrets:
+      - name: {{.Values.name}}-dockercfg
+      {{- end}}
+      containers:
+      - name: {{.Values.name}}
+        image: {{.Values.image}}
+        imagePullPolicy: {{.Values.imagePolicy}}
+        ports:
+        - name: http
+          {{- if .Values.containerPort}}
+          containerPort: {{.Values.containerPort}}
+          {{- else }}
+          containerPort: 80
+          {{- end}}
+          protocol: TCP
+        resources:
+          {{- if .Values.resources}}
+{{.Values.resources | toYaml | indent 10}}
+          {{- else }}
+          limits:
+            memory: 150Mi
+            cpu: 30m
+          requests:
+            memory: 50Mi
+            cpu: 20m
+          {{- end}}
+        livenessProbe:
+          httpGet:
+            {{- if .Values.livenessProbeHealthCheck}}
+            path: {{.Values.livenessProbeHealthCheck}}
+            {{- else }}
+            path: /index.html
+            {{- end}}
+            {{- if .Values.containerPort}}
+            port: {{.Values.containerPort}}
+            {{- else }}
+            port: 80
+            {{- end}}
+            httpHeaders:
+            - name: Custom-Header
+              value: Awesome
+          {{- if .Values.livenessProbeinitialDelaySeconds}}
+          initialDelaySeconds: {{int .Values.livenessProbeinitialDelaySeconds }}
+          {{- else }}
+          initialDelaySeconds: 10
+          {{- end}}
+          
+          periodSeconds: 3
+        {{- if or .Values.env.config .Values.env.secrets}}
+        envFrom:
+        {{- if .Values.env.config}}
+        - configMapRef:
+            name: {{.Values.name}}
+        {{- end}}
+        {{- if .Values.env.secrets}}
+        - secretRef:
+            name: {{.Values.name}}
+        {{- end}}
+        {{- end}}

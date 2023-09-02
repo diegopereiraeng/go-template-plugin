@@ -1,0 +1,30 @@
+name: go-template
+replicas: 1
+
+virtualPath: go-template-vp
+
+image: diegokoala/go-template:latest
+imagePolicy: Always
+
+environment: prod
+
+createNamespace: true
+namespace: prod
+
+# Service Type allow you to specify what kind of service you want.
+# Possible values for ServiceType are:
+# ClusterIP | NodePort | LoadBalancer | ExternalName
+serviceType: ClusterIP
+
+# A Service can map an incoming port to any targetPort.
+# targetPort is where application is listening on inside the container.
+servicePort: 80
+serviceTargetPort: 80
+
+defineHost: "ff.harness-demo.site"
+
+env:
+  config:
+    FFKEY: 12345-67890-12345-67890
+  secrets:
+    FFSECRET: 12345-67890-12345-67890

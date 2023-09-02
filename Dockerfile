@@ -10,11 +10,12 @@ WORKDIR /plugin
 
 # Copy plugin go files and go.mod to working directory
 COPY main.go plugin.go ./
+
 COPY go.mod go.sum ./
-# Initialize go mod
-RUN go mod init go-template-plugin
+
 # Fetch dependencies and build the plugin
 RUN go mod download
+
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o go-template-plugin
 
 # Final stage

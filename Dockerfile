@@ -9,7 +9,7 @@ RUN apk add --no-cache --update git
 WORKDIR /plugin
 
 # Copy plugin go files and go.mod to working directory
-COPY new_main.go new_plugin.go ./
+COPY main.go plugin.go ./
 COPY go.mod go.sum ./
 # Initialize go mod
 RUN go mod init go-template-plugin

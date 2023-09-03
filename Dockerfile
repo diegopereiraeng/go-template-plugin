@@ -12,10 +12,8 @@ WORKDIR /app
 COPY *.go ./
 COPY go.mod go.sum ./
 
-
 # Fetch dependencies and build the plugin
 RUN go mod download
-
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o go-template-plugin
 
 # Final stage
@@ -28,6 +26,9 @@ RUN apk --no-cache add curl jq bash zip yq
 COPY go-template.zip /app/go-template.zip
 RUN unzip /app/go-template.zip -d /app && chmod +x /app/go-template
 
+# Move the go-template binary to /usr/local/bin to make it available in PATH
+RUN mv /app/go-template /usr/local/bin/
+
 # Copy the template test files
 COPY test /app/test
 
@@ -35,11 +36,11 @@ COPY test /app/test
 RUN mkdir /app/test/results
 
 # Copy the plugin binary from the build stage
-COPY --from=plugin-build /app/go-template-plugin /app/go-template-plugin
-RUN chmod +x /app/go-template-plugin
+COPY --from=plugin-build /app/go-template-plugin /usr/local/bin/go-template-plugin
+RUN chmod +x /usr/local/bin/go-template-plugin
 
 # Set the working directory
 WORKDIR /app
 
 # Default command to run the new plugin
-CMD ["/app/go-template-plugin"]
+CMD ["go-template-plugin"]

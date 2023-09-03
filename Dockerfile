@@ -28,7 +28,7 @@ RUN apk --no-cache add curl jq bash zip yq
 
 
 RUN mkdir -m 777 -p /app \
-    && ccurl -s -L -o /app/go-template https://app.harness.io/public/shared/tools/go-template/release/v0.4.4/bin/linux/amd64/go-template
+    && curl -s -L -o /app/go-template https://app.harness.io/public/shared/tools/go-template/release/v0.4.4/bin/linux/amd64/go-template
 
 RUN chmod +x /app/go-template
 

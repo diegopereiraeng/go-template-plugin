@@ -27,9 +27,11 @@ RUN apk --no-cache add curl jq bash zip yq
 # RUN unzip /app/go-template.zip -d /app && chmod +x /app/go-template
 
 
-RUN curl -s -L -o /app/go-template https://app.harness.io/public/shared/tools/go-template/release/v0.4.4/bin/linux/amd64/go-template
+RUN mkdir -m 777 -p /app curl -s -L -o /app/go-template https://app.harness.io/public/shared/tools/go-template/release/v0.4.4/bin/linux/amd64/go-template
 
 RUN chmod +x /app/go-template
+
+
 # Move the go-template binary to /usr/local/bin to make it available in PATH
 RUN mv /app/go-template /usr/local/bin/
 

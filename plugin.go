@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 )
 
 func runCommand(templatePath string, valuesPath string, outputPath string) {
@@ -54,15 +55,36 @@ func runPlugin(templatePath string, valuesPath string, outputPath string) {
 		os.MkdirAll(outputPath, os.ModePerm)
 	}
 
-	// Check if the template path is a file or folder
-	fileInfo, err := os.Stat(templatePath)
+	// Read the content of values.yaml
+	content, err := os.ReadFile(valuesPath)
 	if err != nil {
-		fmt.Println("Error reading template path:", err)
+		fmt.Println("Error reading values.yaml:", err)
 		return
 	}
 
-	fmt.Printf("\nDebug: fileInfo: %+v\\n", fileInfo)
-	fmt.Printf("\nDebug: Is Directory: %v\\n", fileInfo.IsDir())
+	// Use regex to replace all occurrences of "<+...>" with "place_holder"
+	fmt.Println("\033[33mReplacing placeholders...\033[0m") // Yellow text
+	re := regexp.MustCompile("<\\+[^>]+>")
+	updatedContent := re.ReplaceAllString(string(content), "place_holder")
+
+	// Write the updated content back to values.yaml
+	fmt.Println("\033[33mWriting to values.yaml...\033[0m") // Yellow text
+	err = os.WriteFile(valuesPath, []byte(updatedContent), 0644)
+	if err != nil {
+		fmt.Println("\033[31mError writing to values.yaml:\033[0m", err) // Red text
+		return
+	}
+	fmt.Println("\033[32mSuccessfully wrote to values.yaml\033[0m") // Green text
+	// Check if the template path is a file or folder
+	fileInfo, err := os.Stat(templatePath)
+	if err != nil {
+		fmt.Println("\033[31mError reading template path:\033[0m", err) // Red text
+		return
+	}
+	fmt.Println("\033[33mChecking Template Path...\033[0m") // Yellow text
+
+	// fmt.Printf("\nDebug: fileInfo: %+v\\n", fileInfo)
+	// fmt.Printf("\nDebug: Is Directory: %v\\n", fileInfo.IsDir())
 
 	if fileInfo.IsDir() {
 		fmt.Println("Template path is a directory")

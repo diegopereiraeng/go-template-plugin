@@ -19,3 +19,9 @@
 
 # Go workspace file
 go.work
+
+#project
+go-template-plugin
+go-template
+.DS_Store
+**/results/*

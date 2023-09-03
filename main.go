@@ -1,8 +1,8 @@
-
 package main
 
 import (
 	"os"
+
 	"github.com/urfave/cli"
 )
 
@@ -10,7 +10,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "GoTemplate-Plugin"
 	app.Usage = "A plugin for go-template that accepts specific parameters."
-	
+
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "template, t",
@@ -30,11 +30,13 @@ func main() {
 	}
 
 	app.Action = func(c *cli.Context) error {
-		runPlugin(
-			c.String("template"),
-			c.String("values"),
-			c.String("output"),
-		)
+		templatePath := c.String("template")
+		valuesPath := c.String("values")
+		outputPath := c.String("output")
+
+		// Call the runPlugin function from plugin.go
+		runPlugin(templatePath, valuesPath, outputPath)
+
 		return nil
 	}
 

@@ -37,7 +37,7 @@ func runPlugin(templatePath string, valuesPath string, outputPath string) {
 	fmt.Println("running command: ./go-template -t", templatePath, "-f", valuesPath, "-o", outputPath)
 
 	// Build the command
-	cmd := exec.Command("./go-template", "-t", templatePath, "-f", valuesPath, "-o", outputPath)
+	cmd := exec.Command("go-template", "-t", templatePath, "-f", valuesPath, "-o", outputPath)
 
 	// Execute the command
 	output, err := cmd.CombinedOutput()

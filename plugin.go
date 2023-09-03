@@ -34,7 +34,7 @@ func runPlugin(templatePath string, valuesPath string, outputPath string) {
 		os.MkdirAll(outputPath, os.ModePerm)
 	}
 
-	fmt.Println("running command: ./go-template -t", templatePath, "-f", valuesPath, "-o", outputPath)
+	fmt.Println("running command: go-template -t", templatePath, "-f", valuesPath, "-o", outputPath)
 
 	// Build the command
 	cmd := exec.Command("go-template", "-t", templatePath, "-f", valuesPath, "-o", outputPath)

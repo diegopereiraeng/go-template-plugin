@@ -135,10 +135,20 @@ func printStatusTable(successFiles []string, failedFiles []string, outputPath st
 	fmt.Printf("| %-50s | %-10s |\n", "FILE", "STATUS")
 	fmt.Println("------------------------------------------------------------------|")
 	for _, file := range successFiles {
-		fmt.Printf("| %-50s | \033[32m%-10s\033[0m |\n", file, "SUCCESS")
+		// Truncate the file path to 50 characters
+		fileName := filepath.Base(file)
+		if len(fileName) > 50 {
+			fileName = "..." + fileName[len(fileName)-47:]
+		}
+		fmt.Printf("| %-50s | \033[32m%-10s\033[0m |\n", fileName, "SUCCESS")
 	}
 	for _, file := range failedFiles {
-		fmt.Printf("| %-50s | \033[31m%-10s\033[0m |\n", file, "FAILED")
+		// Truncate the file path to 50 characters
+		fileName := filepath.Base(file)
+		if len(fileName) > 50 {
+			fileName = "..." + fileName[len(fileName)-47:]
+		}
+		fmt.Printf("| %-50s | \033[31m%-10s\033[0m |\n", fileName, "FAILED")
 	}
 	fmt.Println("------------------------------------------------------------------|")
 	if len(failedFiles) > 0 {
@@ -146,6 +156,11 @@ func printStatusTable(successFiles []string, failedFiles []string, outputPath st
 	} else {
 		fmt.Printf("\033[32mAll files templetized successfully. Check the output files in %s.\033[0m\n", outputPath)
 	}
-	fmt.Printf("\033[1mTemplate result file:\033[0m %s\n", filepath.Join(outputPath, filepath.Base(templatePath)))
+	// Truncate the template path to 50 characters
+	templateName := filepath.Base(templatePath)
+	if len(templateName) > 50 {
+		templateName = "..." + templateName[len(templateName)-47:]
+	}
+	fmt.Printf("\033[1mTemplate result file:\033[0m %s\n", filepath.Join(outputPath, templateName))
 
 }

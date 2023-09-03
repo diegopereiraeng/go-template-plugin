@@ -9,7 +9,7 @@ import (
 	"regexp"
 )
 
-func runCommand(templatePath string, valuesPath string, outputPath string) {
+func runCommand(templatePath string, valuesPath string, outputPath string) error {
 	fmt.Println("running command: go-template -t", templatePath, "-f", valuesPath, "-o", outputPath)
 
 	// Build the command
@@ -18,7 +18,8 @@ func runCommand(templatePath string, valuesPath string, outputPath string) {
 	// Execute the command
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("Failed to execute command: %s", err)
+		log.Printf("Failed to execute command: %s", err)
+		return err
 	}
 
 	// Generate Output
@@ -26,6 +27,7 @@ func runCommand(templatePath string, valuesPath string, outputPath string) {
 
 	// Log the output
 	log.Printf("Command Output:\n%s\n", output)
+	return nil
 }
 
 // runPlugin function is called from main.go and receives the parameters
@@ -64,7 +66,7 @@ func runPlugin(templatePath string, valuesPath string, outputPath string) {
 
 	// Use regex to replace all occurrences of "<+...>" with "place_holder"
 	fmt.Println("\033[33mReplacing placeholders...\033[0m") // Yellow text
-	re := regexp.MustCompile("<\\+[^>]+>")
+	re := regexp.MustCompile(`<\+[^>]+>`)
 	updatedContent := re.ReplaceAllString(string(content), "place_holder")
 
 	// Write the updated content back to values.yaml
@@ -91,19 +93,32 @@ func runPlugin(templatePath string, valuesPath string, outputPath string) {
 		fmt.Println("Reading directory:", templatePath)
 		fmt.Println("Running command for each YAML file in directory...")
 		// If it's a directory, loop through each YAML file and run commands
+		var failedFiles []string
+		var successFiles []string
 		filepath.Walk(templatePath, func(path string, info os.FileInfo, err error) error {
 			if filepath.Ext(path) == ".yaml" {
 				fmt.Println("Running command for file:", path)
 
-				runCommand(path, valuesPath, outputPath)
+				err := runCommand(path, valuesPath, outputPath)
+				if err != nil {
+					failedFiles = append(failedFiles, path)
+				} else {
+					successFiles = append(successFiles, path)
+				}
 			}
 			return nil
 		})
+		printStatusTable(successFiles, failedFiles, outputPath, templatePath)
 	} else {
 		fmt.Println("Template path is a file")
 		// If it's a file, run your command
 		fmt.Println("Running command for file:", templatePath)
-		runCommand(templatePath, valuesPath, outputPath)
+		err := runCommand(templatePath, valuesPath, outputPath)
+		if err != nil {
+			printStatusTable([]string{}, []string{templatePath}, outputPath, templatePath)
+		} else {
+			printStatusTable([]string{templatePath}, []string{}, outputPath, templatePath)
+		}
 	}
 
 	// Complete
@@ -111,4 +126,26 @@ func runPlugin(templatePath string, valuesPath string, outputPath string) {
 	fmt.Println("")
 	// Developed By Diego Pereira
 	fmt.Println("\033[35mDeveloped By Diego Pereira\033[0m") // Magenta text
+}
+
+func printStatusTable(successFiles []string, failedFiles []string, outputPath string, templatePath string) {
+
+	fmt.Println("\n\033[1mResults:\033[0m")
+	fmt.Println("------------------------------------------------------------------|")
+	fmt.Printf("| %-50s | %-10s |\n", "FILE", "STATUS")
+	fmt.Println("------------------------------------------------------------------|")
+	for _, file := range successFiles {
+		fmt.Printf("| %-50s | \033[32m%-10s\033[0m |\n", file, "SUCCESS")
+	}
+	for _, file := range failedFiles {
+		fmt.Printf("| %-50s | \033[31m%-10s\033[0m |\n", file, "FAILED")
+	}
+	fmt.Println("------------------------------------------------------------------|")
+	if len(failedFiles) > 0 {
+		fmt.Printf("\033[31mSome files failed to templetize. Check the logs for more details.\033[0m\n")
+	} else {
+		fmt.Printf("\033[32mAll files templetized successfully. Check the output files in %s.\033[0m\n", outputPath)
+	}
+	fmt.Printf("\033[1mTemplate result file:\033[0m %s\n", filepath.Join(outputPath, filepath.Base(templatePath)))
+
 }
